@@ -1,0 +1,33 @@
+service: mqtt-publisher
+frameworkVersion: '3'
+
+plugins:
+  - serverless-offline
+
+custom:
+  stage:
+    dev: dev
+    prod: prod
+  myStage: ${opt:stage, self:provider.stage}
+  #customDomain: ${file(./config/custom-domain-${self:provider.stage}.yml):customDomain}
+  environment:
+    STAGE:
+      dev: dev
+      prod: prod
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-northeast-1
+  profile: ${opt:stage,'dev'}
+  stage: ${opt:stage,'dev'}
+  environment:
+    STAGE: ${self:custom.environment.STAGE.${self:custom.myStage}}
+
+functions:
+  publish:
+    handler: index.handler
+    events:
+      - httpApi:
+          path: /
+          method: post
